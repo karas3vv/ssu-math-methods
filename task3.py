@@ -8,9 +8,7 @@ f_data = np.array([2, 3, 10, 29])
 print("Исходные данные:")
 print(pd.DataFrame({'X': x_data, 'F': f_data}))
 
-# -------------------------------
 # Построение таблицы разделённых разностей
-# -------------------------------
 def divided_difference_table(x, y):
     n = len(x)
     table = np.zeros((n, n))
@@ -27,16 +25,12 @@ dd_df = pd.DataFrame(dd_table, columns=[f"f[x0..x{j}]" for j in range(len(x_data
 print("\nТаблица разделённых разностей (матрица Ньютона):")
 print(dd_df)
 
-# -------------------------------
 # Коэффициенты Ньютона (верхняя строка таблицы)
-# -------------------------------
 newton_coeffs = dd_table[0,:]
 print("\nКоэффициенты многочлена Ньютона:")
 print(newton_coeffs)
 
-# -------------------------------
 # Функция для вычисления значения многочлена Ньютона
-# -------------------------------
 def newton_polynomial(x, coeffs, x_data):
     n = len(coeffs) - 1
     p = coeffs[n]

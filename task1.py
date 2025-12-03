@@ -1,31 +1,30 @@
 import numpy
-import pandas
-import string
 
+# входные данные
 x_data = [0, 1, 2, 3]
 f_data = [2, 3, 10, 29]
 x_np_data = numpy.array(x_data)
 f_np_data = numpy.array(f_data)
 
-print("Initial data:")
+print("Исходные данные:")
 for i in range (0, 4):
     print('X' + str(i) + ': ' + str(x_data[i]) + '\tF' + str(i) + ': ' + str(f_data[i]))
 
-# build the matrix
+# сторим матрицу
 matrix = numpy.vander(x_np_data, len(x_data), increasing=True)
 matrix_flipped = numpy.flip(matrix, axis=1)
-print("\nSystem built:")
+print("\nСистема построена:")
 for i in range(0, 4):
     s = ""
     for j in range (0, 4):
         s += str(matrix_flipped[i][j]) + ' * a' + str(4 - j - 1) + ' + '
     print(s[:-2] + ' = ' + str(f_data[i]))
 
-print() # we use the reversed order for eased perception
+print()
 
-# solving the linear algebraic equations system
+# решение системы уравнений для нахождения коэффициентов многочлена
 coefficients = numpy.linalg.solve(matrix, f_np_data)
-print("\nCoefficients found:")
+print("\nКоэффициенты найдены:")
 for i in range (0, 4):
     print('a' + str(i) + ': ' + str(coefficients[i]))
 

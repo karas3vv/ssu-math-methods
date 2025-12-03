@@ -1,6 +1,4 @@
 import numpy
-import pandas
-import string
 
 def lagrange_fundamental(k, x_nodes, z):
         Lk = 1.0
@@ -20,7 +18,7 @@ f_data = [2, 3, 10, 29]
 x_np_data = numpy.array(x_data)
 f_np_data = numpy.array(f_data)
 
-print("Initial data:")
+print("Входные данные:")
 for i in range (0, 4):
     print('X' + str(i) + ': ' + str(x_data[i]) + '\tF' + str(i) + ': ' + str(f_data[i]))
     

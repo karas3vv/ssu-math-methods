@@ -30,6 +30,7 @@
       autoref: [работа],
       nir: [работа],
       pract: [Отчёт о практике],
+      no_type: [],
     ),
     from_course: "курса",
     from_group: "группы",

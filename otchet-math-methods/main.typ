@@ -4,7 +4,7 @@
 ПО ПРАКТИЧЕСКОЙ ПОДГОТОВКЕ
 
 по дисциплине «Методы вычислений»],
-  type: "referat",
+  type: "no_type",
   info: (
     author: (
       name: [Карасева Вадима Дмитриевича],
@@ -22,13 +22,13 @@
       enabled: true,
     ),
     contents_page: (
-      enabled: true,
+      enabled: false,
     ),
   ),
 )
 
 //#intro
 //#conclusion
-#for value in ("1") {
+#for value in ("tasks") {
   include "sections/" + value + ".typ"
 }

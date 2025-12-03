@@ -37,7 +37,6 @@ print(beta)
 epsilon = 10**-9
 print("Считаем до точности epsilon=", epsilon)
 xk = np.zeros(len(A)).reshape(-1,1)
-# xk = np.copy(b)
 
 print("x^(0) = ", xk)
 def normStop (xk, xkp1, epsilon):

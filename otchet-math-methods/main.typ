@@ -1,6 +1,9 @@
 #import "conf.typ": conf, intro, conclusion
 #show: conf.with(
-  title: [Тема работы],
+  title: [ОТЧЕТ 
+ПО ПРАКТИЧЕСКОЙ ПОДГОТОВКЕ
+
+по дисциплине «Методы вычислений»],
   type: "referat",
   info: (
     author: (
@@ -26,6 +29,6 @@
 
 //#intro
 //#conclusion
-#for value in ("1", "2", "3", "4", "5", "6", "7", "8", "9") {
+#for value in ("1") {
   include "sections/" + value + ".typ"
 }

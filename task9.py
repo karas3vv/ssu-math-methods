@@ -1,4 +1,4 @@
-V = 5
+V = 5 # номер варанта
 
 def derivative(x):
     return -(4 * V * x**4 - 3 * V**2 * x**3 + 6 * V * x - 2 * V**2)
@@ -13,7 +13,7 @@ def q(x):
     return -x
 
 def main():
-    n = 1000
+    n = 10
     x0 = 0
     h = V / n
     x = [x0 + i * h for i in range(n + 1)]

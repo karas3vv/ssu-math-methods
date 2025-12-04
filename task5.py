@@ -12,7 +12,6 @@ print("\nКолонка b:")
 for i in range(len(A)):
     b[i] = A[i][i]
     print("[", b[i], "]")
-b = np.dot(A, b)
 
 def forward_elimination(A, b):
     n = len(b)

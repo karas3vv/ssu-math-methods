@@ -29,6 +29,4 @@
 
 //#intro
 //#conclusion
-#for value in ("tasks") {
-  include "sections/" + value + ".typ"
-}
+#include "sections/" + "tasks" + ".typ"

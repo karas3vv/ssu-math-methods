@@ -784,7 +784,7 @@ print("-" * 130)
   )
   $
 ]
-
+*Код*
 ```python
 V = 5 # номер варанта
 def derivative(x):
@@ -812,6 +812,8 @@ def main():
     for i in range(1, n):
         f[i] = 0.5 * (1 + 0.5 * h * p(x[i]))
         s[i] = 0.5 * (1 - 0.5 * h * p(x[i]))
+```
+```
         t[i] = 1 + 0.5 * h**2 * q(x[i])
         r[i] = 0.5 * h**2 * derivative(x[i])
     f1[1] = 0.0
@@ -822,8 +824,6 @@ def main():
         s1[j + 1] = (r[j] + f[j] * s1[j]) / denom
     # Граничное условие y[n] = 0 в оригинале неявно, принимаем y[n]=0
     y[n] = 0.0
-```
-```
     for j in range(n - 1, 0, -1):
         y[j] = f1[j + 1] * y[j + 1] + s1[j + 1]
     max_e = 0.0
@@ -879,6 +879,8 @@ maxx = V
 # y точный
 def ytoch(x):
     return V * x * x * (x - maxx)
+```
+```
 def f(x):
     return 4 * V * (x ** 4) - 3 * V * V * (x ** 3) + 6 * V * x - 2 * V * V
 def p(x):
@@ -907,8 +909,6 @@ for i in range(1, n + 1):
     for k in range(1, n + 1):
         A[i - 1][k - 1] = ddphi_k(xk[i], k) + p(xk[i]) * dphi_k(xk[i], k) + q(xk[i]) * phi_k(xk[i], k)
 print(f"\nРазмерность матрицы A: {A.shape}")
-```
-```
 print(f"Размерность вектора b: {b.shape}")
 # Метод Гаусса для решения СЛАУ A * c = b
 def gauss_elimination(A, b):
@@ -941,6 +941,8 @@ def gauss_elimination(A, b):
             for k in range(i, n):
                 A[j, k] -= factor * A[i, k]
             b[j] -= factor * b[i]
+```
+```
     # Обратный ход метода Гаусса
     c = np.zeros(n)
     for i in range(n - 1, -1, -1):
@@ -1013,9 +1015,9 @@ $ y(x) + 1 * integral_0^1 (x t + x^2 t^2 + x^3 t^3) y(t) d t
 ```python 
 import numpy as np
 from scipy import integrate
-def rhs_func(x, variant): # Правая часть уравнения
+def rhs_func(x, variant): # правая часть уравнения
     return variant * (4 / 3 * x + 1 / 4 * x**2 + 1 / 5 * x**3)
-def build_alpha(size):  # Матрица коэффициентов a_ij
+def build_alpha(size):  # матрица коэффициентов a_ij
     alpha = np.zeros((size, size))
     for i in range(size):
         for j in range(size):
@@ -1032,12 +1034,10 @@ def build_alpha(size):  # Матрица коэффициентов a_ij
                     bj = t**2
                 else:
                     bj = t**3
-```
-```
                 return ai * bj
             alpha[i, j], _ = integrate.quad(integrand, 0, 1)
     return alpha
-def build_gamma(size, variant): # Вектор gamma_i
+def build_gamma(size, variant): # вектор gamma_i
     gamma = np.zeros(size)
     for i in range(size):
         def integrand(t):
@@ -1050,21 +1050,23 @@ def build_gamma(size, variant): # Вектор gamma_i
             return rhs_func(t, variant) * bi
         gamma[i], _ = integrate.quad(integrand, 0, 1)
     return gamma
-def gauss_method(A, b):# Метод Гаусса
+def gauss_method(A, b):# метод Гаусса
     A = A.astype(float)
     b = b.astype(float)
     n = len(b)
-    for i in range(n): # Прямой ход
-        max_row = i + np.argmax(abs(A[i:, i])) # Поиск максимального элемента для выбора главного элемента
+    for i in range(n): # прямой ход
+        max_row = i + np.argmax(abs(A[i:, i])) # поиск максимального элемента для выбора главного элемента
         if A[max_row, i] == 0:
             raise ValueError("Система не имеет единственного решения (нулевой ведущий элемент).")
         if max_row != i: # Перестановка строк
             A[[i, max_row]] = A[[max_row, i]]
             b[[i, max_row]] = b[[max_row, i]]
-        pivot = A[i, i] # Нормализация ведущей строки
+        pivot = A[i, i] # нормализация ведущей строки
+```
+```
         A[i] = A[i] / pivot
         b[i] = b[i] / pivot
-        for j in range(i + 1, n): # Обнуление элементов под ведущим
+        for j in range(i + 1, n): # обнуление элементов под ведущим
             factor = A[j, i]
             A[j] = A[j] - factor * A[i]
             b[j] = b[j] - factor * b[i]
@@ -1094,10 +1096,8 @@ def fredholm_solver(variant, rank=3):
     y_true = variant * x_vals
     err = np.abs(y_num - y_true)
     return x_vals, y_num, y_true, err
-```
-```
 def main():
-    V = int(input("Введите номер варианта (v): "))
+    V = 5
     x, y_calc, y_exact, error = fredholm_solver(V)
     print("\nРешение интегрального уравнения Фредгольма (вырожденное ядро)")
     print("x:           ", " ".join(f"{float(xi):7.3f}" for xi in x))
@@ -1109,7 +1109,6 @@ if __name__ == "__main__":
 ```
 *Результат*
 ```
-Введите номер варианта (v): 5
 Решение интегрального уравнения Фредгольма (вырожденное ядро)
 x:       0.000   0.100   0.200   0.300   0.400   0.500   0.600   0.700   0.800   0.900   1.000
 y_мет:   0.000   0.500   1.000   1.500   2.000   2.500   3.000   3.500   4.000   4.500   5.000
@@ -1154,8 +1153,6 @@ def solve_fredholm_degenerate_correct(V):
     x_test = np.linspace(a, b, 10)
     y_num_vals = [y_numerical(x) for x in x_test]
     y_ex_vals = [y_exact(x) for x in x_test]
-```
-```
     errors = [abs(y_num_vals[i] - y_ex_vals[i]) for i in range(len(x_test))]
     df = pd.DataFrame(
         {"x": x_test, "y_метода": y_num_vals, "y_точн": y_ex_vals, "eps": errors}

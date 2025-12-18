@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import integrate
-def rhs_func(x, variant): # Правая часть уравнения
+def rhs_func(x, variant): # правая часть уравнения
     return variant * (4 / 3 * x + 1 / 4 * x**2 + 1 / 5 * x**3)
-def build_alpha(size):  # Матрица коэффициентов a_ij
+def build_alpha(size):  # матрица коэффициентов a_ij
     alpha = np.zeros((size, size))
     for i in range(size):
         for j in range(size):
@@ -22,7 +22,7 @@ def build_alpha(size):  # Матрица коэффициентов a_ij
                 return ai * bj
             alpha[i, j], _ = integrate.quad(integrand, 0, 1)
     return alpha
-def build_gamma(size, variant): # Вектор gamma_i
+def build_gamma(size, variant): # вектор gamma_i
     gamma = np.zeros(size)
     for i in range(size):
         def integrand(t):
@@ -35,21 +35,21 @@ def build_gamma(size, variant): # Вектор gamma_i
             return rhs_func(t, variant) * bi
         gamma[i], _ = integrate.quad(integrand, 0, 1)
     return gamma
-def gauss_method(A, b):# Метод Гаусса
+def gauss_method(A, b):# метод Гаусса
     A = A.astype(float)
     b = b.astype(float)
     n = len(b)
-    for i in range(n): # Прямой ход
-        max_row = i + np.argmax(abs(A[i:, i])) # Поиск максимального элемента для выбора главного элемента
+    for i in range(n): # прямой ход
+        max_row = i + np.argmax(abs(A[i:, i])) # поиск максимального элемента для выбора главного элемента
         if A[max_row, i] == 0:
             raise ValueError("Система не имеет единственного решения (нулевой ведущий элемент).")
         if max_row != i: # Перестановка строк
             A[[i, max_row]] = A[[max_row, i]]
             b[[i, max_row]] = b[[max_row, i]]
-        pivot = A[i, i] # Нормализация ведущей строки
+        pivot = A[i, i] # нормализация ведущей строки
         A[i] = A[i] / pivot
         b[i] = b[i] / pivot
-        for j in range(i + 1, n): # Обнуление элементов под ведущим
+        for j in range(i + 1, n): # обнуление элементов под ведущим
             factor = A[j, i]
             A[j] = A[j] - factor * A[i]
             b[j] = b[j] - factor * b[i]
@@ -80,7 +80,8 @@ def fredholm_solver(variant, rank=3):
     err = np.abs(y_num - y_true)
     return x_vals, y_num, y_true, err
 def main():
-    V = int(input("Введите номер варианта (v): "))
+    V = 5
+    print(f"Вычисление для варианта {V}")
     x, y_calc, y_exact, error = fredholm_solver(V)
     print("\nРешение интегрального уравнения Фредгольма (вырожденное ядро)")
     print("x:           ", " ".join(f"{float(xi):7.3f}" for xi in x))

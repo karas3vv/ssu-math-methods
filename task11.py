@@ -1,48 +1,91 @@
 import numpy as np
-import pandas as pd
-from scipy.integrate import quad
-from scipy.linalg import solve
-
-
-def solve_fredholm_degenerate_correct(V):
-    a, b = 0, 1
-    n = 3
-    lam = 1
-
-    def y_exact(x):
-        return V * x
-
-    def f(x):
-        return V * (4 / 3 * x + 1 / 4 * x**2 + 1 / 5 * x**3)
-
-    a_funcs = [lambda x: x, lambda x: x**2, lambda x: x**3]
-    b_funcs = [lambda t: t, lambda t: t**2, lambda t: t**3]
-    alpha = np.zeros((n, n))
-    gamma = np.zeros(n)
-    for i in range(n):
-        for k in range(n):
-            alpha[i, k], _ = quad(lambda x: a_funcs[i](x) * b_funcs[k](x), a, b)
-        gamma[i], _ = quad(lambda x: f(x) * b_funcs[i](x), a, b)
-    A = np.eye(n) + lam * alpha.T
-    q = solve(A, gamma)
-
-    def y_numerical(x):
-        result = f(x)
-        for i in range(n):
-            result -= lam * q[i] * a_funcs[i](x)
-        return result
-
-    x_test = np.linspace(a, b, 10)
-    y_num_vals = [y_numerical(x) for x in x_test]
-    y_ex_vals = [y_exact(x) for x in x_test]
-    errors = [abs(y_num_vals[i] - y_ex_vals[i]) for i in range(len(x_test))]
-    df = pd.DataFrame(
-        {"x": x_test, "y_метода": y_num_vals, "y_точн": y_ex_vals, "eps": errors}
-    )
-    print(df.to_string(index=False))
-    print("\n")
-    return y_numerical, y_exact
-
+from scipy import integrate
+def rhs_func(x, variant): # Правая часть уравнения
+    return variant * (4 / 3 * x + 1 / 4 * x**2 + 1 / 5 * x**3)
+def build_alpha(size):  # Матрица коэффициентов a_ij
+    alpha = np.zeros((size, size))
+    for i in range(size):
+        for j in range(size):
+            def integrand(t):
+                if i == 0:
+                    ai = t
+                elif i == 1:
+                    ai = t**2
+                else:
+                    ai = t**3
+                if j == 0:
+                    bj = t
+                elif j == 1:
+                    bj = t**2
+                else:
+                    bj = t**3
+                return ai * bj
+            alpha[i, j], _ = integrate.quad(integrand, 0, 1)
+    return alpha
+def build_gamma(size, variant): # Вектор gamma_i
+    gamma = np.zeros(size)
+    for i in range(size):
+        def integrand(t):
+            if i == 0:
+                bi = t
+            elif i == 1:
+                bi = t**2
+            else:
+                bi = t**3
+            return rhs_func(t, variant) * bi
+        gamma[i], _ = integrate.quad(integrand, 0, 1)
+    return gamma
+def gauss_method(A, b):# Метод Гаусса
+    A = A.astype(float)
+    b = b.astype(float)
+    n = len(b)
+    for i in range(n): # Прямой ход
+        max_row = i + np.argmax(abs(A[i:, i])) # Поиск максимального элемента для выбора главного элемента
+        if A[max_row, i] == 0:
+            raise ValueError("Система не имеет единственного решения (нулевой ведущий элемент).")
+        if max_row != i: # Перестановка строк
+            A[[i, max_row]] = A[[max_row, i]]
+            b[[i, max_row]] = b[[max_row, i]]
+        pivot = A[i, i] # Нормализация ведущей строки
+        A[i] = A[i] / pivot
+        b[i] = b[i] / pivot
+        for j in range(i + 1, n): # Обнуление элементов под ведущим
+            factor = A[j, i]
+            A[j] = A[j] - factor * A[i]
+            b[j] = b[j] - factor * b[i]
+    x = np.zeros(n) # Обратный ход
+    for i in range(n - 1, -1, -1):
+        x[i] = b[i] - np.dot(A[i, i + 1:], x[i + 1:])
+    return x
+def fredholm_solver(variant, rank=3):
+    alpha = build_alpha(rank)
+    gamma = build_gamma(rank, variant)
+    system_matrix = np.eye(rank) + alpha
+    coeffs = gauss_method(system_matrix, gamma)
+    step = 0.1
+    x_vals = np.arange(0, 1 + step, step)
+    y_num = np.zeros_like(x_vals)
+    for i, x in enumerate(x_vals):
+        y_val = rhs_func(x, variant)
+        for j in range(rank):
+            if j == 0:
+                aj = x
+            elif j == 1:
+                aj = x**2
+            else:
+                aj = x**3
+            y_val -= coeffs[j] * aj
+        y_num[i] = y_val
+    y_true = variant * x_vals
+    err = np.abs(y_num - y_true)
+    return x_vals, y_num, y_true, err
+def main():
+    V = int(input("Введите номер варианта (v): "))
+    x, y_calc, y_exact, error = fredholm_solver(V)
+    print("\nРешение интегрального уравнения Фредгольма (вырожденное ядро)")
+    print("x:           ", " ".join(f"{float(xi):7.3f}" for xi in x))
+    print("y_мет:       ", " ".join(f"{float(yi):7.3f}" for yi in y_calc))
+    print("y_точн:      ", " ".join(f"{float(yi):7.3f}" for yi in y_exact))
+    print("погрешность: ", " ".join(f"{ei:7.3f}" for ei in error))
 if __name__ == "__main__":
-    V = 5  # номер варанта
-    solve_fredholm_degenerate_correct(V)
+    main()

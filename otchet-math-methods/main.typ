@@ -700,7 +700,16 @@ x^(9)= [[5.]
  [9.]]
 ```
 = Задача Коши методами Эйлера
-Решить задачу Коши: a) методом Эйлера; б) усовершенствованным методом Эйлера: $𝑦′ = 2 ⋅ 𝑉 ⋅ 𝑥 + 𝑉 ⋅ 𝑥^2 − 𝑦, 𝑦(x_0) = 𝑉 ⋅ 𝑥^2$.
+Решить задачу Коши: a) методом Эйлера; б) усовершенствованным методом Эйлера:
+  $
+  cases(
+    y'(x) = 2 V x + V x^2 - y(x), \
+    y(1) = V
+  )
+  $
+
+где $ y_"точн"(x) = V x^2$, $V$ — номер варианта.
+
 
 *Код*
 
@@ -752,6 +761,8 @@ print("y_M:    ", " ".join(f"{y:>10.7f}" for y in y_euler))
 print("y_T:    ", " ".join(f"{y:>10.7f}" for y in y_exact))
 print("Погрешн:", " ".join(f"{e:>10.7f}" for e in error_euler))
 print("-" * 130)
+```
+```
 print("\nУсовершенствованный метод Эйлера: ")
 print("-" * 130)
 print("x:      ", " ".join(f"{x:>10.7f}" for x in x_improved))
@@ -878,8 +889,6 @@ def phi_k(x, k):
     return x ** k * (x - V)
 def dphi_k(x, k):
     return (k + 1) * x ** k - V * k * x ** (k - 1)
-```
-```
 def ddphi_k(x, k):
     return k * (k + 1) * x ** (k - 1) - V * k * (k - 1) * x ** (k - 2)
 # Создаем сетку
@@ -898,6 +907,8 @@ for i in range(1, n + 1):
     for k in range(1, n + 1):
         A[i - 1][k - 1] = ddphi_k(xk[i], k) + p(xk[i]) * dphi_k(xk[i], k) + q(xk[i]) * phi_k(xk[i], k)
 print(f"\nРазмерность матрицы A: {A.shape}")
+```
+```
 print(f"Размерность вектора b: {b.shape}")
 # Метод Гаусса для решения СЛАУ A * c = b
 def gauss_elimination(A, b):
@@ -941,8 +952,6 @@ def gauss_elimination(A, b):
 print("\nРешение СЛАУ методом Гаусса")
 c = gauss_elimination(A.copy(), b.copy())
 print("\nПервые 10 коэффициентов a_k:")
-```
-```
 for i in range(min(10, len(c))):
     print(f"a_{i+1} = {c[i]:.6e}")
 # Построение приближенного решения
@@ -957,7 +966,8 @@ print("x\t\tТочное y\tПриближенное y\t\tОтносительн
 for x in range(V + 1):
     y_exact = ytoch(x)
     y_appr = y_approx(x, c)
-    rel_error = abs((y_appr - y_exact) / y_exact) if abs(y_exact) > 1e-12 else abs(y_appr)
+    rel_error = abs((y_appr - y_exact) / y_exact) if abs(y_exact) > 1e-12 
+    else abs(y_appr)
     print(f"{x}\t\t{y_exact:.4f}\t\t{y_appr:.4f}\t\t{rel_error:.2e}")
 ```
 
@@ -995,17 +1005,129 @@ x               Точное y        Приближенное y          Отн
 5                0.0000             0.0000                    0.00e+00
 ```
 
-= Решите следующее интегральное уравнение:
+= Метод неопределенных коэффициентов 
+Решите следующее интегральное уравнение:
+$ y(x) + 1 * integral_0^1 (x t + x^2 t^2 + x^3 t^3) y(t) d t
+  = V (4/3 x + 1/4 x^2 + 1/5 x^3) $
+*Код*
+```python 
+import numpy as np
+from scipy import integrate
+def rhs_func(x, variant): # Правая часть уравнения
+    return variant * (4 / 3 * x + 1 / 4 * x**2 + 1 / 5 * x**3)
+def build_alpha(size):  # Матрица коэффициентов a_ij
+    alpha = np.zeros((size, size))
+    for i in range(size):
+        for j in range(size):
+            def integrand(t):
+                if i == 0:
+                    ai = t
+                elif i == 1:
+                    ai = t**2
+                else:
+                    ai = t**3
+                if j == 0:
+                    bj = t
+                elif j == 1:
+                    bj = t**2
+                else:
+                    bj = t**3
+```
+```
+                return ai * bj
+            alpha[i, j], _ = integrate.quad(integrand, 0, 1)
+    return alpha
+def build_gamma(size, variant): # Вектор gamma_i
+    gamma = np.zeros(size)
+    for i in range(size):
+        def integrand(t):
+            if i == 0:
+                bi = t
+            elif i == 1:
+                bi = t**2
+            else:
+                bi = t**3
+            return rhs_func(t, variant) * bi
+        gamma[i], _ = integrate.quad(integrand, 0, 1)
+    return gamma
+def gauss_method(A, b):# Метод Гаусса
+    A = A.astype(float)
+    b = b.astype(float)
+    n = len(b)
+    for i in range(n): # Прямой ход
+        max_row = i + np.argmax(abs(A[i:, i])) # Поиск максимального элемента для выбора главного элемента
+        if A[max_row, i] == 0:
+            raise ValueError("Система не имеет единственного решения (нулевой ведущий элемент).")
+        if max_row != i: # Перестановка строк
+            A[[i, max_row]] = A[[max_row, i]]
+            b[[i, max_row]] = b[[max_row, i]]
+        pivot = A[i, i] # Нормализация ведущей строки
+        A[i] = A[i] / pivot
+        b[i] = b[i] / pivot
+        for j in range(i + 1, n): # Обнуление элементов под ведущим
+            factor = A[j, i]
+            A[j] = A[j] - factor * A[i]
+            b[j] = b[j] - factor * b[i]
+    x = np.zeros(n) # Обратный ход
+    for i in range(n - 1, -1, -1):
+        x[i] = b[i] - np.dot(A[i, i + 1:], x[i + 1:])
+    return x
+def fredholm_solver(variant, rank=3):
+    alpha = build_alpha(rank)
+    gamma = build_gamma(rank, variant)
+    system_matrix = np.eye(rank) + alpha
+    coeffs = gauss_method(system_matrix, gamma)
+    step = 0.1
+    x_vals = np.arange(0, 1 + step, step)
+    y_num = np.zeros_like(x_vals)
+    for i, x in enumerate(x_vals):
+        y_val = rhs_func(x, variant)
+        for j in range(rank):
+            if j == 0:
+                aj = x
+            elif j == 1:
+                aj = x**2
+            else:
+                aj = x**3
+            y_val -= coeffs[j] * aj
+        y_num[i] = y_val
+    y_true = variant * x_vals
+    err = np.abs(y_num - y_true)
+    return x_vals, y_num, y_true, err
+```
+```
+def main():
+    V = int(input("Введите номер варианта (v): "))
+    x, y_calc, y_exact, error = fredholm_solver(V)
+    print("\nРешение интегрального уравнения Фредгольма (вырожденное ядро)")
+    print("x:           ", " ".join(f"{float(xi):7.3f}" for xi in x))
+    print("y_мет:       ", " ".join(f"{float(yi):7.3f}" for yi in y_calc))
+    print("y_точн:      ", " ".join(f"{float(yi):7.3f}" for yi in y_exact))
+    print("погрешн: ", " ".join(f"{ei:7.3f}" for ei in error))
+if __name__ == "__main__":
+    main()
+```
+*Результат*
+```
+Введите номер варианта (v): 5
+Решение интегрального уравнения Фредгольма (вырожденное ядро)
+x:       0.000   0.100   0.200   0.300   0.400   0.500   0.600   0.700   0.800   0.900   1.000
+y_мет:   0.000   0.500   1.000   1.500   2.000   2.500   3.000   3.500   4.000   4.500   5.000
+y_точн:  0.000   0.500   1.000   1.500   2.000   2.500   3.000   3.500   4.000   4.500   5.000
+погрешн: 0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+```
+
+= Метод квадратур
+Решите следующее интегральное уравнение:
 $ y(x) + 1 * integral_0^1 (x t + x^2 t^2 + x^3 t^3) y(t) d t
   = V (4/3 x + 1/4 x^2 + 1/5 x^3) $
 
+*Код*
 ```python 
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
 from scipy.linalg import solve
-```
-```
 def solve_fredholm_degenerate_correct(V):
     a, b = 0, 1
     n = 3
@@ -1032,6 +1154,8 @@ def solve_fredholm_degenerate_correct(V):
     x_test = np.linspace(a, b, 10)
     y_num_vals = [y_numerical(x) for x in x_test]
     y_ex_vals = [y_exact(x) for x in x_test]
+```
+```
     errors = [abs(y_num_vals[i] - y_ex_vals[i]) for i in range(len(x_test))]
     df = pd.DataFrame(
         {"x": x_test, "y_метода": y_num_vals, "y_точн": y_ex_vals, "eps": errors}
